@@ -6,52 +6,42 @@
 \begin{document}
 
 % Title
-\title{An open source scientific article}
+\title{Semi-analytic transit models for oblate planets in Jax}
 
 % Author list
-\author{@shashankdholakia}
+\author{Shashank Dholakia} \author{Shishir Dholakia}
 
 % Abstract with filler text
 \begin{abstract}
-    Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
-    Ut purus elit, vestibulum ut, placerat ac, adipiscing vitae, felis.
-    Curabitur dictum gravida mauris, consectetuer id, vulputate a, magna.
-    Donec vehicula augue eu neque, morbi tristique senectus et netus et.
-    Mauris ut leo, cras viverra metus rhoncus sem, nulla et lectus vestibulum.
-    Phasellus eu tellus sit amet tortor gravida placerat.
-    Integer sapien est, iaculis in, pretium quis, viverra ac, nunc.
-    Praesent eget sem vel leo ultrices bibendum.
-    Aenean faucibus, morbi dolor nulla, malesuada eu, pulvinar at, mollis ac.
-    Curabitur auctor semper nulla donec varius orci eget risus.
-    Duis nibh mi, congue eu, accumsan eleifend, sagittis quis, diam.
-    Duis eget orci sit amet orci dignissim rutrum.
+
 \end{abstract}
 
 % Main body with filler text
 \section{Introduction}
 \label{sec:intro}
 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
-Ut purus elit, vestibulum ut, placerat ac, adipiscing vitae, felis.
-Curabitur dictum gravida mauris, consectetuer id, vulputate a, magna.
-Donec vehicula augue eu neque, morbi tristique senectus et netus et.
-Mauris ut leo, cras viverra metus rhoncus sem, nulla et lectus vestibulum.
-Phasellus eu tellus sit amet tortor gravida placerat.
-Integer sapien est, iaculis in, pretium quis, viverra ac, nunc.
-Praesent eget sem vel leo ultrices bibendum.
-Aenean faucibus, morbi dolor nulla, malesuada eu, pulvinar at, mollis ac.
-Curabitur auctor semper nulla donec varius orci eget risus.
-Duis nibh mi, congue eu, accumsan eleifend, sagittis quis, diam.
-Duis eget orci sit amet orci dignissim rutrum.
 
-Nam dui ligula, fringilla a, euismod sodales, sollici- tudin vel, wisi.
-Morbi auctor lorem non justo, nam lacus libero, pretium at, lobortis vitae.
-Donec aliquet, tortor sed accumsan bibendum, erat ligula aliquet magna.
-Morbi ac orci et nisl hendrerit mollis, suspendisse ut massa, cras nec ante.
-Pellentesque a nulla cum sociis natoque penatibus et magnis dis parturient.
-Aliquam tincidunt urna, nulla ullamcorper vestibulum turpis.
-Pellentesque cursus luctus mauris \citep{Luger2021}.
+\section{Ellipsoidal Model}
+\label{sec:model}
+The transit model we use is based on the formalism of the \texttt{starry} framework \citep{starry2019}, which provides closed-form expressions for occultations involving circular bodies in projection with general surface maps expressed in terms of spherical harmonics. \citet{dholakia2022} described an extension of the \texttt{starry} framework for an oblate occulted body, such as a rapidly rotating star. Here we present an extension for the case of any occultor which is an ellipse in projection. 
 
+\subsection{Oblate Case}
+\subsection{Prolate Case}
+\section{Prospects for Detection with JWST and other Instruments}
+\label{sec:jwstdetect}
+\subsection{Cramer-Rao Recoverability Estimates}
+\label{sec:rec}
+\subsection{Fisher Forecasting of Existing Planet Population}
+\label{sec:fisherforecasting}
+\subsection{Impact of Limb Darkening}
+\subsection{Impact on Atmospheric Retreivals}
+\section{Implementation in \lowercase{\texttt{jax0planet}}}
+\label{sec:jax0planet}
+\section{Application to [test system]}
+\label{sec:lctest}
+\section{Discussion and Future Work}
+\label{disc}
+\subsection{Hierarchical Inference}
 \bibliography{bib}
 
 \end{document}
