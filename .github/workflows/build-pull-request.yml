@@ -21,3 +21,5 @@ jobs:
           SANDBOX_TOKEN: ${{ secrets.SANDBOX_TOKEN }}
           OVERLEAF_EMAIL: ${{ secrets.OVERLEAF_EMAIL }}
           OVERLEAF_PASSWORD: ${{ secrets.OVERLEAF_PASSWORD }}
+        with:
+          showyourwork-spec: git+https://github.com/showyourwork/showyourwork
