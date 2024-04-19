@@ -1,7 +1,7 @@
 % Define document class
 \documentclass[twocolumn]{aastex631}
 \usepackage{showyourwork}
-
+\usepackage{amsmath,esint}
 % Begin!
 \begin{document}
 
@@ -25,6 +25,40 @@
 \label{sec:model}
 The transit model we use is based on the formalism of the \texttt{starry} framework \citep{starry2019}, which provides closed-form expressions for occultations involving circular bodies in projection with general surface maps expressed in terms of spherical harmonics. \citet{dholakia2022} described an extension of the \texttt{starry} framework for an oblate occulted body, such as a rapidly rotating star. Here we present an extension for the case of any occultor which is an ellipse in projection. 
 
+Our goal is to compute the flux observed during an occultation of a star by a body, which can be written as a surface integral of the intensity over the visible (unobscured) region of the star as:
+
+\begin{equation}
+   F = \oiint\limits_{\mathrm{S}(x,y)} I(x,y) \ dS
+\end{equation}
+where the surface $S$ parametrizes the unobscured portion of the stellar disk and $I$ is the specific intensity at a point $(x,y)$ on the projected surface of the star. 
+
+\citet{starry2019} showed that if the specific intensity $I(x,y)$ is expanded in terms of the spherical harmonics, this double integral can be written in a simpler form that is both computationally and numerically easier to evaulate. We summarize the method here, and refer readers to the full text for the details. 
+
+We start with a vector representing the stellar intensity in terms of spherical harmonics $\mathbf{y}$, and transform it into Green's basis as in Eq.~21 of \citet{starry2019}. We then have: 
+
+\begin{equation}
+   F = \oiint\limits_{\mathrm{S}(x,y)} \mathbf{\tilde{g}}^\mathsf{T}(x,y) \ \mathbf{A} \ \mathbf{y}\ dS 
+\end{equation}
+
+The vector $\mathbf{y}$ and change of basis matrix $A$ are not dependant on $x$ and $y$ and can consequently be pulled out of the integral, leaving only the Green's basis in the surface integral. Using the vector function $\mathbf{G_n}$, defined as the anti-exterior derivative of Green's basis, we can write:
+
+\begin{equation}
+   \oiint\limits_{\mathrm{S}(x,y)} \mathbf{\tilde{g}}^\mathsf{T}(x,y)\ dS \\
+   = \oint\limits_{\mathrm{S}(x,y)} \mathbf{\tilde{g}}^\mathsf{T}(x,y) \cdot d\mathbf{r}
+\end{equation}
+where $\mathbf{r}$ is a vector function along a closed boundary that parametrizes the integral (see Fig.~\ref{fig:integralbounds}). 
+
+\begin{figure}[ht!]
+    \script{integralbounds.py}
+    \begin{centering}
+        \includegraphics[width=\linewidth]{figures/oblate_planet.pdf}
+        \caption{Boundary of the line integral in Eq.~
+        }
+        \label{fig:integral_bounds}
+    \end{centering}
+\end{figure}
+
+\subsection{Limb darkening}
 \subsection{Oblate Case}
 \subsection{Prolate Case}
 \section{Prospects for Detection with JWST and other Instruments}
