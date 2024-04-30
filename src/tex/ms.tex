@@ -23,30 +23,65 @@
 
 \section{Ellipsoidal Model}
 \label{sec:model}
-The transit model we use is based on the formalism of the \texttt{starry} framework \citep{starry2019}, which provides closed-form expressions for occultations involving circular bodies in projection with general surface maps expressed in terms of spherical harmonics. \citet{dholakia2022} described an extension of the \texttt{starry} framework for an oblate occulted body, such as a rapidly rotating star. Here we present an extension for the case of any occultor which is an ellipse in projection. 
+The transit model we use is based on the formalism of the \texttt{starry} framework \citep{starry2019}, which provides closed-form expressions for occultations involving circular bodies in projection with general surface maps expressed in terms of spherical harmonics. \citet{dholakia2022} described an extension of the \texttt{starry} framework for an oblate occulted body, such as a rapidly rotating star. Here we present an extension for the case of any occultor which is an ellipse in projection. \citet{starry2019} showed that if the specific intensity $I(x,y)$ on the projected stellar disk is expanded in terms of the spherical harmonics, the expression for the flux during an occultation can be written in a simpler form that is both computationally and numerically easier to evaulate. We summarize the method here, and refer readers to the full text for the details. 
 
-Our goal is to compute the flux observed during an occultation of a star by a body, which can be written as a surface integral of the intensity over the visible (unobscured) region of the star as:
+Our goal is to compute the flux observed during an occultation of a star by a body, which can be written as a surface integral of the intensity over the visible region of the star as:
 
 \begin{equation}
    F = \oiint\limits_{\mathrm{S}(x,y)} I(x,y) \ dS
 \end{equation}
-where the surface $S$ parametrizes the unobscured portion of the stellar disk and $I$ is the specific intensity at a point $(x,y)$ on the projected surface of the star. 
-
-\citet{starry2019} showed that if the specific intensity $I(x,y)$ is expanded in terms of the spherical harmonics, this double integral can be written in a simpler form that is both computationally and numerically easier to evaulate. We summarize the method here, and refer readers to the full text for the details. 
+where the surface $S$ parametrizes the unobscured portion of the stellar disk and $I$ is the specific intensity at a point $(x,y)$ on the projected surface of the star.
 
 We start with a vector representing the stellar intensity in terms of spherical harmonics $\mathbf{y}$, and transform it into Green's basis as in Eq.~21 of \citet{starry2019}. We then have: 
 
 \begin{equation}
-   F = \oiint\limits_{\mathrm{S}(x,y)} \mathbf{\tilde{g}}^\mathsf{T}(x,y) \ \mathbf{A} \ \mathbf{y}\ dS 
+   F = \oiint\limits_{\mathrm{S}(x,y)} \mathbf{\tilde{g}}^\mathsf{T}(x,y) \ \mathbf{A}\ \mathbf{R}\ \mathbf{y}\ dS 
+\end{equation}
+where the vector $\mathbf{y}$, the rotation matrix $\mathbf{R}$ and the change of basis matrix $\mathbf{A}$ are not dependant on $x$ and $y$ and can consequently be pulled out of the integral, leaving only the Green's basis in the surface integral. Using the vector function $\mathbf{G_n}$, defined as the anti-exterior derivative of the $n$th term in Green's basis, we can write:
+
+\begin{equation} \label{eq:greensintegral}
+   \oiint\limits_{\mathrm{S}(x,y)} \mathbf{\tilde{g}}_n(x,y)\ dS \\
+   = \oint \mathbf{G}_n(x,y) \cdot d\mathbf{r}
+\end{equation}
+where $\mathbf{r}$ is a vector function along the closed boundary of the region $S(x,y)$. We can then further decompose the integral in Eq.~\ref{eq:greensintegral} into a section along the stellar projected disk and the occultor's projected disk (see Fig.~\ref{fig:integral_bounds}):
+
+\begin{equation} \label{eq:pandq}
+    \oint \mathbf{G}(x,y) \cdot d\mathbf{r} = \mathcal{Q}(\mathbf{G}_n) - \mathcal{P}(\mathbf{G}_n)
 \end{equation}
 
-The vector $\mathbf{y}$ and change of basis matrix $A$ are not dependant on $x$ and $y$ and can consequently be pulled out of the integral, leaving only the Green's basis in the surface integral. Using the vector function $\mathbf{G_n}$, defined as the anti-exterior derivative of Green's basis, we can write:
+From here, we deviate from the \texttt{starry} framework to solve the line integrals around the star and elliptical occultor. First, we apply a rotation by an angle $\theta$ into a frame where the occultor's major axis is aligned with the x-axis. We then must solve for the points of intersection between the star and the occultor. 
 
-\begin{equation}
-   \oiint\limits_{\mathrm{S}(x,y)} \mathbf{\tilde{g}}^\mathsf{T}(x,y)\ dS \\
-   = \oint\limits_{\mathrm{S}(x,y)} \mathbf{\tilde{g}}^\mathsf{T}(x,y) \cdot d\mathbf{r}
+\subsection{Integration bounds}
+First, it helps to consider the circular case, where the star is parametrized as the unit circle:
+\begin{equation} \label{eq:unitcircle}
+x^2 + y^2 = 1
 \end{equation}
-where $\mathbf{r}$ is a vector function along a closed boundary that parametrizes the integral (see Fig.~\ref{fig:integralbounds}). 
+and the planet as an off-center circle with radius $r_{o}$ as:
+\begin{equation} \label{eq:circularplanet}
+(x-x_o)^2-(y-y_o)^2 = r_o^2
+\end{equation}
+
+We can solve for the intersection points by solving for all $(x,y)$ which satisfy both equations, which yields a quadratic equation with either 0, 1 or 2 real solutions.
+
+In the elliptical case, we can modify Eq.~\ref{eq:circularplanet} by deforming the occultor along the y axis by a value $b$, now taking the radius $r_{eq}$ to represent the projected equatorial radius of the occultor. 
+\begin{equation} \label{eq:ellipticalplanet}
+(x-x_{o})^2-\frac{(y-y_o)^2}{b^2} = r_{eq}^2
+\end{equation}
+
+Solving for y in the above equation and then plugging it into Eq.~\ref{eq:unitcircle} yields a quartic polynomial of the form: 
+\begin{equation} \label{eq:quarticform}
+Ax^4 + Bx^3 + Cx^2 + Dx + E = 0
+\end{equation} 
+where
+\begin{align*}
+A &= \frac{b^4 - 2b^2 + 1}{4y_o^2}\\
+B &= \frac{-b^4x_o + b^2x_o}{y_o^2}\\
+C &= \frac{-b^4r_{eq}^2 + 3b^4x_o^2 + b^2r_{eq}^2 - b^2x_o^2 + b^2y_o^2 + b^2 + y_o^2 - 1}{2y_o^2} \\
+D &= \frac{b^4r_{eq}^2x_o - b^4x_o^3 - b^2x_oy_o^2 - b^2x_o}{y_o^2} \\
+E &= \frac{b^4r_{eq}^4 - 2b^4r_{eq}^2x_o^2 + b^4x_o^4 - 2b^2r_{eq}^2y_o^2 - 2b^2r_{eq}^2 + 2b^2x_o^2y_o^2 + 2b^2x_o^2 + y_o^4 - 2y_o^2 + 1}{4y_o^2}\\
+\end{align*}
+We note that other methods of finding the flux in transit of elliptical occultors also require solving for quartic polynomials \citep{rein2023}. 
+\subsection{Planet boundary integral}
 
 \begin{figure}[ht!]
     \script{integral_bounds.py}
