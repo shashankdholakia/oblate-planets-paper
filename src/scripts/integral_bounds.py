@@ -30,9 +30,13 @@ def draw_oblate(b, xo, yo, ro, theta):
     ax.add_artist(occultor)
     
     ax.annotate("", xy=(xo, yo+ro), xytext=(xo, yo+ro*b), arrowprops=dict(arrowstyle="<->", color='r', alpha=0.7, shrinkA=1, shrinkB=1, linewidth=0.7))
-    ax.annotate("f", xy=(xo, yo+ro*b/2+ro/2), xytext=(3, 0), textcoords="offset points", ha="left", va="center", color='r', fontsize=12, alpha=0.7)
-
+    ax.annotate(r"$f r_{eq}$", xy=(xo, yo+ro*b/2+ro/2), xytext=(3, -1), textcoords="offset points", ha="left", va="center", color='r', fontsize=12, alpha=0.7)
     
+    ax.annotate("", xy=(xo, yo), xytext=(xo-ro, yo), arrowprops=dict(arrowstyle="<->", color='r', alpha=0.7, shrinkA=1, shrinkB=1, linewidth=0.7))
+    ax.annotate(r"$r_{eq}$", xy=(xo-ro/2, yo), xytext=(0, -3), textcoords="offset points", ha="center", va="top", color='r', fontsize=12, alpha=0.7)
+
+    ax.annotate(r"$(x_o, y_o)$", xy=(xo, yo), xytext=(0, 6), textcoords="offset points", ha="right", va="bottom", color='r', fontsize=12, alpha=0.7)
+
     ax.annotate(r"occultor", xy=(xo, yo+ro*b+.19), xycoords="data",
             xytext=(0, 0),
             textcoords="offset points", ha="center", va="bottom",
@@ -51,7 +55,7 @@ def draw_oblate(b, xo, yo, ro, theta):
     #dots for center of star and planet
     ax.plot(0, 0, 'ko')
     ax.plot(xo, yo, 'ro')
-    ax.annotate("b", xy=(xo/2, yo/2), xytext=(5, 5), textcoords="offset points", ha="left", va="center", color='k', fontsize=14, alpha=0.7)
+    ax.annotate(r"$b_o$", xy=(xo/2, yo/2), xytext=(5, 5), textcoords="offset points", ha="left", va="center", color='k', fontsize=14, alpha=0.7)
 
     
     #dotted line connecting star and planet to reference theta
