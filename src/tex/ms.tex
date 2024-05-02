@@ -63,11 +63,11 @@ and the planet as an off-center circle with radius $r_{o}$ as:
 
 We can solve for the intersection points by solving for all $(x,y)$ which satisfy both equations, which yields a quadratic equation with either 0, 1 or 2 real solutions.
 
-In the elliptical case, we can modify Eq.~\ref{eq:circularplanet} by deforming the occultor along the y axis by a value $b$, now taking the radius $r_{eq}$ to represent the projected equatorial radius of the occultor. 
+In the elliptical case, we can modify Eq.~\ref{eq:circularplanet} by deforming the occultor along the y axis by a value $b$, now taking the radius $r_o$ to represent the projected equatorial radius of the occultor. 
 \begin{equation} \label{eq:ellipticalplanet}
-(x-x_{o})^2-\frac{(y-y_o)^2}{b^2} = r_{eq}^2
+(x-x_{o})^2-\frac{(y-y_o)^2}{b^2} = r_o^2
 \end{equation}
-
+where we define $b=1-f$. Here we emphasize that the $r_o$ and $f$ refer to the \textit{projected} equatorial radius and oblateness respectively. 
 Solving for y in the above equation and then plugging it into Eq.~\ref{eq:unitcircle} yields a quartic polynomial of the form: 
 \begin{equation} \label{eq:quarticform}
 Ax^4 + Bx^3 + Cx^2 + Dx + E = 0
@@ -76,9 +76,9 @@ where
 \begin{align*}
 A &= \frac{b^4 - 2b^2 + 1}{4y_o^2}\\
 B &= \frac{-b^4x_o + b^2x_o}{y_o^2}\\
-C &= \frac{-b^4r_{eq}^2 + 3b^4x_o^2 + b^2r_{eq}^2 - b^2x_o^2 + b^2y_o^2 + b^2 + y_o^2 - 1}{2y_o^2} \\
-D &= \frac{b^4r_{eq}^2x_o - b^4x_o^3 - b^2x_oy_o^2 - b^2x_o}{y_o^2} \\
-E &= \frac{b^4r_{eq}^4 - 2b^4r_{eq}^2x_o^2 + b^4x_o^4 - 2b^2r_{eq}^2y_o^2 - 2b^2r_{eq}^2 + 2b^2x_o^2y_o^2 + 2b^2x_o^2 + y_o^4 - 2y_o^2 + 1}{4y_o^2}\\
+C &= \frac{-b^4r_o^2 + 3b^4x_o^2 + b^2r_o^2 - b^2x_o^2 + b^2y_o^2 + b^2 + y_o^2 - 1}{2y_o^2} \\
+D &= \frac{b^4r_o^2x_o - b^4x_o^3 - b^2x_oy_o^2 - b^2x_o}{y_o^2} \\
+E &= \frac{b^4r_o^4 - 2b^4r_o^2x_o^2 + b^4x_o^4 - 2b^2r_o^2y_o^2 - 2b^2r_o^2 + 2b^2x_o^2y_o^2 + 2b^2x_o^2 + y_o^4 - 2y_o^2 + 1}{4y_o^2}\\
 \end{align*}
 We note that other methods of finding the flux in transit of elliptical occultors also require solving for quartic polynomials \citep{rein2023}. 
 \subsection{Planet boundary integral}
