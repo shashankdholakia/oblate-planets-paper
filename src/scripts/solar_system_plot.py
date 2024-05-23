@@ -1,6 +1,3 @@
-import sys
-sys.path.append("/Users/uqsdhola/Projects/jax0planet/")
-
 import jax.numpy as jnp
 import jax
 import numpy as np
@@ -13,7 +10,7 @@ from jaxoplanet.light_curves import limb_dark_light_curve
 import arviz as az
 import corner
 
-from core.jax import oblate_lightcurve, compute_bounds
+from eclipsoid.light_curve import oblate_lightcurve, compute_bounds
 import os
 os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count=2"
 import matplotlib 
