@@ -17,9 +17,12 @@
 \end{abstract}
 
 % Main body with filler text
-\section{Introduction}
+\section{Introduction} \label{sec:intro}
 The contemporary study of exoplanets frequently assumes spherical bodies. While this is often a valid assumption, the deviations from this case are informative and contain valuable information which may be discarded by assuming sphericity.
-\label{sec:intro}
+
+In Sec.~\ref{sec:model}, we describe a new forward model for light curves of spherical bodies with ellipsoidal occultors. We then describe the implementation of this model in the Python package \texttt{eclipsoid} in Sec.~\ref{sec:eclipsoid}. The package is built using the \texttt{jax} framework, which allows automatic differentiation of the model with respect to its parameters. We describe a use of this in Sec.~\ref{sec:jwstdetect}, where we utilize Fisher information to quantify the detectability of ellipsoidal exoplanets using JWST and other instruments. Lastly, in Sec.~\ref{sec:lctest}, we apply the new model to the JWST white light curve of WASP107b and demonstrate that we can constrain the oblateness and prolateless of the exoplanet. 
+
+This paper has been written using the open-source package \textcolor{red}{\textit{showyourwork!}} for transparency and ease of reproduction. At the end of every figure caption, we link to a GitHub repository containing a Python script used to generate the figure. All data used in this paper is hosted on Zenodo at the following link.
 
 \section{Ellipsoidal Model}
 \label{sec:model}
@@ -85,7 +88,7 @@ E &= \frac{b^4r_o^4 - 2b^4r_o^2x_o^2 + b^4x_o^4 - 2b^2r_o^2y_o^2 - 2b^2r_o^2 + 2
 \end{equation}
 
 \twocolumngrid
-We note that other methods of finding the flux in transit of elliptical occultors also require solving for quartic polynomials \citep{rein2023}. We solve the roots of this polynomial using eigendecomposition of the companion matrix (see \ref{sec:jax0planet} for details of the implementation). \textcolor{red}{we need to update this in eclipsoid to use a more numerically precise method}. The solution gives the x values of the intersection points where the projected disk of the star and the occultor coincide. We can then find the corresponding y values by plugging it back into the formula for either the occultor or occulted body. 
+We note that other methods of finding the flux in transit of elliptical occultors also require solving for quartic polynomials \citep{rein2023}. We solve the roots of this polynomial using eigendecomposition of the companion matrix (see \ref{sec:eclipsoid} for details of the implementation). \textcolor{red}{we need to update this in eclipsoid to use a more numerically precise method}. The solution gives the x values of the intersection points where the projected disk of the star and the occultor coincide. We can then find the corresponding y values by plugging it back into the formula for either the occultor or occulted body. 
 
 \subsection{Star boundary integral}
 The first integral $\mathcal{Q}(\mathbf{G}_n)$ is performed around the boundary of the occulted body's projected disk (bolded black border in Fig.~\ref{fig:integral_bounds}.) While the integrand is the same as in \citet{starry2019}, the bounds of the integral are the roots of the quartic polynomial shown in Eq.~\ref{eq:quarticcoeffs}. We compute the angle $\xi$, defined as the angle between the x-axis and a given intersection point, for all the intersection points. We then sort these angles in clockwise order. 
@@ -116,7 +119,7 @@ where we write $\sin{(\phi)}$ as $s_\phi$ and $\cos{(\phi)}$ as $c_\phi$ for bre
 \subsection{Limb darkening}
 \subsection{Oblate Case}
 \subsection{Prolate Case}
-\section{Implementation in \lowercase{\texttt{jax0planet}}} \label{sec:jax0planet}
+\section{Implementation in eclipsoid} \label{sec:eclipsoid}
 -implementation details:\\
     -API\\
     -root finding (with custom derivatives)\\
