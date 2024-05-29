@@ -88,7 +88,7 @@ E &= \frac{b^4r_o^4 - 2b^4r_o^2x_o^2 + b^4x_o^4 - 2b^2r_o^2y_o^2 - 2b^2r_o^2 + 2
 \end{equation}
 
 \twocolumngrid
-We note that other methods of finding the flux in transit of elliptical occultors also require solving for quartic polynomials \citep{rein2023}. We solve the roots of this polynomial using eigendecomposition of the companion matrix (see \ref{sec:eclipsoid} for details of the implementation). \textcolor{red}{we need to update this in eclipsoid to use a more numerically precise method}. The solution gives the x values of the intersection points where the projected disk of the star and the occultor coincide. We can then find the corresponding y values by plugging it back into the formula for either the occultor or occulted body. 
+We note that other methods of finding the flux in transit of ellipses in projection also require solving for quartic polynomials (i.e exorings in \citep{rein2023} or shells of intensity on exoplanets in \citep{luger2017}). We solve the roots of this polynomial using eigendecomposition of the companion matrix (see \ref{sec:eclipsoid} for details of the implementation). \textcolor{red}{we need to update this in eclipsoid to use a more numerically precise method}. The solution gives the x values of the intersection points where the projected disk of the star and the occultor coincide. We can then find the corresponding y values by plugging it back into the formula for either the occultor or occulted body. 
 
 \subsection{Star boundary integral}
 The first integral $\mathcal{Q}(\mathbf{G}_n)$ is performed around the boundary of the occulted body's projected disk (bolded black border in Fig.~\ref{fig:integral_bounds}.) While the integrand is the same as in \citet{starry2019}, the bounds of the integral are the roots of the quartic polynomial shown in Eq.~\ref{eq:quarticcoeffs}. We compute the angle $\xi$, defined as the angle between the x-axis and a given intersection point, for all the intersection points. We then sort these angles in clockwise order. 
@@ -139,6 +139,10 @@ where we write $\sin{(\phi)}$ as $s_\phi$ and $\cos{(\phi)}$ as $c_\phi$ for bre
 -precision (do we reach machine precision?)\\
 -show derivatives, maybe against numerical diff\\
 \section{Prospects for Detection with JWST and other Instruments}
+
+The use of automatic differentiation provided by \texttt{jax} in our model allows the computation of the Fisher information of relevant parameters of our model, such as the oblateness and obliquity. In this section, we describe the use of Fisher information on simulated datasets in order to make inferences about the detectability of oblateness and obliquity using existing instrumentation, such as JWST, Kepler, and TESS.
+
+
 \label{sec:jwstdetect}
 
 \subsection{Cramer-Rao Recoverability Estimates}
