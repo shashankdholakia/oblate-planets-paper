@@ -1,4 +1,4 @@
-from jax0planet.numpy_src import coeffs, intersection_points, compute_bounds, draw_oblate, draw_oblate_under_planet, compute_bounds_under_planet
+from eclipsoid.numpy_src import coeffs, intersection_points, compute_bounds, draw_oblate, draw_oblate_under_planet, compute_bounds_under_planet
 
 import numpy as np
 import paths

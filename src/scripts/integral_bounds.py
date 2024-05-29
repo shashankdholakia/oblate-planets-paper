@@ -1,4 +1,4 @@
-from jax0planet.numpy_src import *
+from eclipsoid.numpy_src import *
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Ellipse, Arc
@@ -80,7 +80,7 @@ def draw_oblate(b, xo, yo, ro, theta):
     ax.plot([0,prerot_center[0]],[0,prerot_center[1]],'k:',alpha=0.3,lw=1., zorder=-1)
     ax.add_artist(prerot)
     
-    rot_angle = Arc((0, 0), 0.15, 0.15, 0, np.degrees(np.arctan2(yo, xo)), np.degrees(np.arctan2(yo, xo))+theta, color="r", alpha=0.4, ls="-", lw=1)
+    rot_angle = Arc((0, 0), 0.15, 0.15, angle=0, theta1=np.degrees(np.arctan2(yo, xo)), theta2=np.degrees(np.arctan2(yo, xo))+theta, color="r", alpha=0.4, ls="-", lw=1)
     ax.add_patch(rot_angle)
     ax.text(-0.15, -0.04, s=r"$\theta$", size=14, color='r',alpha=0.7)
     
@@ -170,11 +170,11 @@ def draw_oblate(b, xo, yo, ro, theta):
     ax.plot(x, y, color='r', lw=2,zorder=-1);
     
     #angle arcs
-    stellar_angle = Arc((0, 0), 0.15, 0.15, 0, 0, np.degrees(xi[0]), color="k", alpha=0.7, ls="-", lw=1)
+    stellar_angle = Arc((0, 0), 0.15, 0.15, angle=0, theta1=0, theta2=np.degrees(xi[0]), color="k", alpha=0.7, ls="-", lw=1)
     ax.add_patch(stellar_angle)
     ax.text(0.08,0.04, s=r"$\xi$", size=14, color='k',alpha=0.7)
     
-    planet_angle = Arc((xo, yo), 0.25, 0.25, 0, 0, np.degrees(phi[1]), color="r", alpha=0.7, ls="-", lw=1)
+    planet_angle = Arc((xo, yo), 0.25, 0.25, angle=0, theta1=0, theta2=np.degrees(phi[1]), color="r", alpha=0.7, ls="-", lw=1)
     ax.add_patch(planet_angle)
     ax.text(xo+0.15, yo+0.02, s=r"$\phi$", size=13, color='r',alpha=0.7)
     return fig, ax
