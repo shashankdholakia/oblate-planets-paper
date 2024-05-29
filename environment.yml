@@ -12,6 +12,7 @@ dependencies:
   - pip:
       - matplotlib
       - corner
+      - chainconsumer==0.34.0
       - numpyro
       - numpyro-ext
       - git+https://github.com/shishirdholakia/jax0planet.git
