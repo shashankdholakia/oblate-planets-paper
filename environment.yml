@@ -15,4 +15,5 @@ dependencies:
       - chainconsumer==0.34.0
       - numpyro
       - numpyro-ext
+      - jaxns==2.4.8
       - git+https://github.com/shishirdholakia/eclipsoid.git
