@@ -73,7 +73,7 @@ true_params = {'period':7.704045333151538,
           'theta':np.radians(35),
           'duration': 0.12
 }
-yerr = 100*1e-6
+yerr = 10*1e-6
 
 data = jnp.array(legacy_oblate_lightcurve(true_params, t-true_params['t0']))#+yerr*np.random.normal(size=len(t)))
 h = 2*jnp.sqrt(true_params['f']/2)*np.cos(2*true_params['theta'])
@@ -88,6 +88,12 @@ opt_params = ['h','k', 'r_circ', 'bo', 'duration','u']
 
 cov = zdx.covariance_matrix(model, opt_params, custom_loglike, data, noise=yerr)
 inf_data = az.from_netcdf(paths.data / "average_radius_NUTS_10ppm.h5")
+
+h, k = np.concatenate(inf_data.posterior.hk.to_numpy(), axis=0).T
+r_circ = np.concatenate(inf_data.posterior.r_circ.to_numpy(), axis=0)
+bo = np.concatenate(inf_data.posterior.bo.to_numpy(), axis=0)
+duration = np.concatenate(inf_data.posterior.duration.to_numpy(), axis=0)
+u1, u2 = np.concatenate(inf_data.posterior.u.to_numpy(), axis=0).T
 
 X = np.array([model.h,model.k, model.r_circ, model.bo, model.duration, model.u[0],model.u[1]])
 c = ChainConsumer()
