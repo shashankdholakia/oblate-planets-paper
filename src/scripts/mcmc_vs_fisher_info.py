@@ -99,6 +99,6 @@ X = np.array([model.h,model.k, model.r_circ, model.bo, model.duration, model.u[0
 c = ChainConsumer()
 c.add_covariance(X, cov, parameters=['h','k', 'r_circ', 'bo', 'duration','u1','u2'], name='Fisher info')
 c.add_chain(np.array([h,k,r_circ,bo,duration,u1, u2]).T, parameters=['h','k', 'r_circ', 'bo', 'duration','u1','u2'],name='MCMC')
-c.configure(serif=True, shade=True, bar_shade=True, shade_alpha=0.2, spacing=1., max_ticks=3)
+c.configure(serif=True, shade=True, bar_shade=True, shade_alpha=0.2, spacing=1., max_ticks=3,label_font_size=16)
 fig = c.plotter.plot()
 plt.savefig(paths.figures / "NUTS_vs_Fisher_info.pdf", dpi=300)
