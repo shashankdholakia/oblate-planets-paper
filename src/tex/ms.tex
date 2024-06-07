@@ -18,7 +18,14 @@
 
 % Main body with filler text
 \section{Introduction} \label{sec:intro}
-The contemporary study of exoplanets frequently assumes spherical bodies. While this is often a valid assumption, the deviations from this case are informative and contain valuable information which may be discarded by assuming sphericity.
+The contemporary study of exoplanets frequently assumes spherical bodies. While this is often a valid assumption, the deviations from this case are informative and contain valuable information which may be discarded by assuming sphericity. Two dominant deviations from sphericity are expected for certain exoplanets: oblateness due to the impact of rapid rotation, and prolateness due to the effect of tides.
+
+Planetary oblateness is predicted to occur for some planets that orbit at long enough separations from their host stars that the effects of tides do not synchronize the rotation to the orbital period of the planet \citep{seager2002a}. For these planets, a significant rotation rate could result in deformation due to the centrifugal force causing deviation from spherically symmetric hydrostatic equilibrium. This results in an planet shaped as an oblate spheroid with a larger radius at the equator than the poles. Saturn in the solar system rotates with a rotation period of $P_{\rm rot} \approx $ 10 hours and 39 minutes, resulting in an oblateness factor of f $\approx$ 10 \%, the ratio of the equatorial radius to the polar radius \citep{davies1980}. If the planetary mass, radius, and rotation period are known, the oblateness factor allows a constraint of the $J_2$ moment, or alternatively the $J_2$ moment can be assumed to constrain the rotation period. 
+
+For planets very closely separated to their host stars, the effect of strong tides of the stellar gravitational field on the planet result in a 
+
+
+The advent of high-precision space-based photometry has enabled planetary parameters to be constrained precisely for a large number of transiting planets. 
 
 In Sec.~\ref{sec:model}, we describe a new forward model for light curves of spherical bodies with ellipsoidal occultors. We then describe the implementation of this model in the Python package \texttt{eclipsoid} in Sec.~\ref{sec:eclipsoid}. The package is built using the \texttt{jax} framework, which allows automatic differentiation of the model with respect to its parameters. We describe a use of this in Sec.~\ref{sec:jwstdetect}, where we utilize Fisher information to quantify the detectability of ellipsoidal exoplanets using JWST and other instruments. Lastly, in Sec.~\ref{sec:lctest}, we apply the new model to the JWST white light curve of WASP107b and demonstrate that we can constrain the oblateness and prolateless of the exoplanet. 
 
@@ -66,11 +73,11 @@ and the planet as an off-center circle with radius $r_{o}$ as:
 
 We can solve for the intersection points by solving for all $(x,y)$ which satisfy both equations, which yields a quadratic equation with either 0, 1 or 2 real solutions.
 
-In the elliptical case, we can modify Eq.~\ref{eq:circularplanet} by deforming the occultor along the y axis by a value $b$, now taking the radius $r_o$ to represent the projected equatorial radius of the occultor. 
+In the elliptical case, we can modify Eq.~\ref{eq:circularplanet} by deforming the occultor along the y axis by a value $b$, now taking the radius $r_{eq}$ to represent the projected equatorial radius of the occultor. 
 \begin{equation} \label{eq:ellipticalplanet}
-(x-x_{o})^2-\frac{(y-y_o)^2}{b^2} = r_o^2
+(x-x_{o})^2-\frac{(y-y_o)^2}{b^2} = r_{eq}^2
 \end{equation}
-where we define $b=1-f$. Here we emphasize that the $r_o$ and $f$ refer to the \textit{projected} equatorial radius and oblateness respectively. 
+where we define $b=1-f$. Here we emphasize that the $r_{eq}$ and $f$ refer to the \textit{projected} equatorial radius and oblateness respectively. 
 Solving for y in the above equation and then plugging it into Eq.~\ref{eq:unitcircle} yields a quartic polynomial of the form: 
 \begin{equation} \label{eq:quarticform}
 Ax^4 + Bx^3 + Cx^2 + Dx + E = 0
@@ -81,14 +88,14 @@ where
 \begin{aligned}
 A &= \frac{b^4 - 2b^2 + 1}{4y_o^2}\\
 B &= \frac{-b^4x_o + b^2x_o}{y_o^2}\\
-C &= \frac{-b^4r_o^2 + 3b^4x_o^2 + b^2r_o^2 - b^2x_o^2 + b^2y_o^2 + b^2 + y_o^2 - 1}{2y_o^2} \\
-D &= \frac{b^4r_o^2x_o - b^4x_o^3 - b^2x_oy_o^2 - b^2x_o}{y_o^2} \\
-E &= \frac{b^4r_o^4 - 2b^4r_o^2x_o^2 + b^4x_o^4 - 2b^2r_o^2y_o^2 - 2b^2r_o^2 + 2b^2x_o^2y_o^2 + 2b^2x_o^2 + y_o^4 - 2y_o^2 + 1}{4y_o^2}\\
+C &= \frac{-b^4r_{eq}^2 + 3b^4x_o^2 + b^2r_{eq}^2 - b^2x_o^2 + b^2y_o^2 + b^2 + y_o^2 - 1}{2y_o^2} \\
+D &= \frac{b^4r_{eq}^2x_o - b^4x_o^3 - b^2x_oy_o^2 - b^2x_o}{y_o^2} \\
+E &= \frac{b^4r_{eq}^4 - 2b^4r_{eq}^2x_o^2 + b^4x_o^4 - 2b^2r_{eq}^2y_o^2 - 2b^2r_{eq}^2 + 2b^2x_o^2y_o^2 + 2b^2x_o^2 + y_o^4 - 2y_o^2 + 1}{4y_o^2}\\
 \end{aligned}
 \end{equation}
 
 \twocolumngrid
-We note that other methods of finding the flux in transit of ellipses in projection also require solving for quartic polynomials (i.e exorings in \citep{rein2023} or shells of intensity on exoplanets in \citep{luger2017}). We solve the roots of this polynomial using eigendecomposition of the companion matrix (see \ref{sec:eclipsoid} for details of the implementation). \textcolor{red}{we need to update this in eclipsoid to use a more numerically precise method}. The solution gives the x values of the intersection points where the projected disk of the star and the occultor coincide. We can then find the corresponding y values by plugging it back into the formula for either the occultor or occulted body. 
+We note that other methods of finding the flux in transit of ellipses in projection also require solving for quartic polynomials (i.e exorings in \citep{rein2023} or shells of intensity on exoplanets in \citep{luger2017}). We solve the roots of this polynomial using eigendecomposition of the companion matrix (see \ref{sec:eclipsoid} for details of the implementation). The solution gives the x values of the intersection points where the projected disk of the star and the occultor coincide. We can then find the corresponding y values by plugging it back into the formula for either the occultor or occulted body. 
 
 \subsection{Star boundary integral}
 The first integral $\mathcal{Q}(\mathbf{G}_n)$ is performed around the boundary of the occulted body's projected disk (bolded black border in Fig.~\ref{fig:integral_bounds}.) While the integrand is the same as in \citet{starry2019}, the bounds of the integral are the roots of the quartic polynomial shown in Eq.~\ref{eq:quarticcoeffs}. We compute the angle $\xi$, defined as the angle between the x-axis and a given intersection point, for all the intersection points. We then sort these angles in clockwise order. 
@@ -97,13 +104,13 @@ The first integral $\mathcal{Q}(\mathbf{G}_n)$ is performed around the boundary 
 The occultor (or planet) boundary integral $\mathcal{P}(\mathbf{G}_n)$ also starts with the intersection points. We define an angle $\phi$ to parametrize the bounds of the line integral. This angle, as noted in \citet{dholakia2022}, is defined similarly to an eccentric anomaly; the angle from the semimajor axis of the planet to the perpendicular projection of an intersection point onto the circle bounding the ellipse. Then, for the integrand, we start with the parametric formula for an ellipse:
 
 \begin{align}
-    x &= r_o \cos(\phi) + x_o \\
-    y &= r_o b \sin(\phi) + y_o
+    x &= r_{eq} \cos(\phi) + x_o \\
+    y &= r_{eq} b \sin(\phi) + y_o
 \end{align}
 We then plug this into the integrand for $\mathcal{P}(\mathbf{G}_n)$ in Eq.~\ref{eq:pandq} to obtain:
 \begin{align}
-\mathcal{P}(\mathbf{G}_n) = \int_{\phi}^{2\pi + \phi}[\ G_{ny}(r_o c_\phi + x_o , r_o b s_\phi + y_o) b c_\phi] \ r_o d\phi \\
-- \int_{\phi}^{2\pi + \phi}[G_{nx}(r_o c_\phi + x_o, r_o b s_\phi + y_o)s_\phi]\ r_o d\phi
+\mathcal{P}(\mathbf{G}_n) = \int_{\phi}^{2\pi + \phi}[\ G_{ny}(r_{eq} c_\phi + x_o , r_{eq} b s_\phi + y_o) b c_\phi] \ r_{eq} d\phi \\
+- \int_{\phi}^{2\pi + \phi}[G_{nx}(r_{eq} c_\phi + x_o, r_{eq} b s_\phi + y_o)s_\phi]\ r_{eq} d\phi
 \end{align}
 where we write $\sin{(\phi)}$ as $s_\phi$ and $\cos{(\phi)}$ as $c_\phi$ for brevity.
 \begin{figure}[ht!]
@@ -138,15 +145,86 @@ where we write $\sin{(\phi)}$ as $s_\phi$ and $\cos{(\phi)}$ as $c_\phi$ for bre
 -speed\\
 -precision (do we reach machine precision?)\\
 -show derivatives, maybe against numerical diff\\
-\section{Prospects for Detection with JWST and other Instruments}
+\section{Prospects for Detection with JWST and other Instruments} \label{sec:jwstdetect}
 
-The use of automatic differentiation provided by \texttt{jax} in our model allows the computation of the Fisher information of relevant parameters of our model, such as the oblateness and obliquity. In this section, we describe the use of Fisher information on simulated datasets in order to make inferences about the detectability of oblateness and obliquity using existing instrumentation, such as JWST, Kepler, and TESS.
+The use of automatic differentiation provided by \texttt{jax} in our model allows the computation of the Fisher information, and hence the Cramér-Rao bound, on relevant parameters of our model, such as the oblateness and obliquity. In this section, we describe the use of Fisher information on simulated datasets in order to make inferences about the detectability of oblateness and obliquity using existing instrumentation, such as JWST, Kepler, and TESS.
 
+Given a data vector $\mathbf{d}$ and vector of parameters $\boldsymbol{\boldsymbol{\vartheta}}$ corresponding to latent parameters of the oblate transit model, we wish to constrain some of these latent parameters while marginalizing over the other unknown parameters. In our case, the data vector $\mathbf{d}$ is a transit light curve. We can write this problem using Bayes theorem as follows:
 
-\label{sec:jwstdetect}
+\begin{equation} \label{eq:bayes}
+\overbrace{p(\boldsymbol{\vartheta} \mid \mathbf{d})}^{\text{posterior}} = \frac{\overbrace{p(\mathbf{d} \mid \boldsymbol{\vartheta})}^{\text{likelihood}} \, \overbrace{p(\boldsymbol{\vartheta})}^{\text{prior}}}{\underbrace{\int p(\mathbf{d} \mid \boldsymbol{\vartheta}) \, p(\boldsymbol{\vartheta}) \, d\boldsymbol{\vartheta}}_{\text{evidence}}}
+\end{equation}
+In practice, we usually deal with the log of both sides of Eq.~\ref{eq:bayes}: 
+\begin{equation} \label{eq:logbayes}
+    \underbrace{\log p(\boldsymbol{\vartheta} \mid \mathbf{d})}_{\text{log-posterior}} = \underbrace{\mathcal{L}(\mathbf{d} \mid \boldsymbol{\vartheta})}_{\text{log-likelihood}} + \underbrace{\Pi(\boldsymbol{\vartheta})}_{\text{log-prior}} - \underbrace{\log Z}_{\text{log-evidence}}
+\end{equation}
+where we denote $\pi$, $\mathcal{L}$, and $Z$ the log-prior, the log-likelihood and the evidence respectively.
+
+When designing an experiment to measure the oblateness and obliquity of a planet using the transit method, it is necessary to know whether the planet's transit light curve will provide information on these parameters. The primary challenge here is a spherical planet of equivalent area closely matches the transit of an ellipsoidal exoplanet. Hence, many works determine the detectability of oblateness in terms of the difference in signal between the ellipsoidal planet and an equal-area or best-fitting circular planet \citep{seager2002a, barnes2003, carter2010a, zhu2014}. However, this neglects the influence of other uncertain parameters of the model--such as the limb darkening coefficients or the impact parameter--on the oblateness and obliquity. A standard procedure to propagate all sources of uncertainty onto the oblateness would involve a simulated injection and recovery exercise, in which an ellipsoidal exoplanet transit is simulated with a fiducial set of parameters and then using a technique such as MCMC or nested sampling to recover the posterior distribution on all parameters of the model. However, this is prohibitively computationally expensive to perform on large numbers of planets or fine grids of parameters. In addition, the usage of sampling techniques creates sampling noise in the final posterior. We instead opt to use Laplace's approximation to analytically calculate the variance on parameters for an idealized observation, a technique which we describe below. 
 
 \subsection{Cramer-Rao Recoverability Estimates}
-\label{sec:rec}
+\label{sec:rec} 
+Taking a simplified example where the transit light curve can be described only using the planet-to-star radius ratio $r_o$, impact parameter $b_o$, and the oblateness and obliquity $f$ and $\theta$ respectively, the parameter vector $\boldsymbol{\vartheta}$  could be written:
+\begin{equation} \label{eq:paramvector}
+    \boldsymbol{\vartheta} = 
+    \begin{pmatrix}
+    r_o \\
+    f \\
+    \theta \\
+    b_o
+\end{pmatrix}
+\end{equation}
+in practice, we also include the planet orbital period, time of transit, duration, and limb darkening parameters in the parameter vector, though these are omitted here for brevity.
+
+We assume that the observed data are normally distributed about the light curve computed at the true parameters, giving a log-likelihood function:
+\begin{equation}
+    \mathcal{L}(\boldsymbol{\vartheta}) \propto -\frac{1}{2} \sum_{i=1}^{N} \frac{(d_i - \mu_i(\boldsymbol{\vartheta}))^2}{\sigma_i^2}
+\end{equation}
+The log likelihood $\mathcal{L}$, should be maximal at the expected values of these parameters $\boldsymbol{\hat{\vartheta}}$. We can Taylor expand the log-likelihood about the point of maximum likelihood (following Desdoigts et al. 2024, in press):
+\begin{equation} \label{eq:taylor}
+    \mathcal{L}(\vartheta) \approx 
+    \underbrace{\mathcal{L}(\hat{\boldsymbol{\vartheta}})}_{\text{0th order}}
+    + \underbrace{\nabla \mathcal{L}(\boldsymbol{\vartheta} - \hat{\boldsymbol{\vartheta}})}_{\text{1st order}} + \underbrace{\frac{1}{2}(\boldsymbol{\vartheta} - \hat{\boldsymbol{\vartheta}})^\top \nabla^2 \mathcal{L}(\boldsymbol{\vartheta} - \hat{\boldsymbol{\vartheta}})}_{\text{2nd order}}
+\end{equation}
+where in this context, the $\nabla^2$ operator refers to the Hessian matrix, that is:
+\begin{equation*}
+    \nabla^2 \mathcal{L}(\boldsymbol{\vartheta})_{ij} = \frac{\partial^2 \mathcal{L}}{\partial\vartheta_i\ \partial\vartheta_j}
+\end{equation*}
+
+Furthermore, we note that the gradient of $ \mathcal{L}$ will be zero around the point of maximum likelihood: 
+\begin{equation}
+    \nabla \mathcal{L}(\hat{\boldsymbol{\vartheta}}) = 0
+\end{equation}
+so we can simplify Eq.~\ref{eq:taylor} to read:
+\begin{equation} \label{eq:taylor}
+    \mathcal{L}(\boldsymbol{\vartheta}) \approx 
+    \mathcal{L}(\hat{\boldsymbol{\vartheta}}) + \frac{1}{2}(\boldsymbol{\vartheta} - \hat{\boldsymbol{\vartheta}})^\top \nabla^2 \mathcal{L}(\boldsymbol{\vartheta} - \hat{\boldsymbol{\vartheta}})
+\end{equation}
+
+The latter term $\nabla^2 \mathcal{L}$ is also known as the Fisher information matrix \citep{fisher1922}. Its inverse is the covariance matrix with respect to each of the parameters in $\boldsymbol{\vartheta}$, which according to the parameter vector in Eq.~\ref{eq:paramvector}, can be written as follows, where the diagonal contains the variances on each parameter:
+\begin{equation}
+    \mathbf{C}(\boldsymbol{\vartheta}) = 
+\begin{bmatrix}
+\sigma_{r_o}^2 & \sigma_{r_o, f} & \sigma_{r_o, \theta} & \sigma_{r_o, b_o} \\
+\sigma_{f, r_o} & \sigma_{f}^2 & \sigma_{f, \theta} & \sigma_{f, b_o} \\
+\sigma_{\theta, r_o} & \sigma_{\theta, f} & \sigma_{\theta}^2 & \sigma_{\theta, b_o} \\
+\sigma_{b_o, r_o} & \sigma_{b_o, f} & \sigma_{b_o, \theta} & \sigma_{b_o}^2
+\end{bmatrix}
+\end{equation}
+
+This entire process is equivalent to analytically fitting our likelihood function to a Gaussian distribution centered around the point of maximum likelihood. To illustrate this, we compare the posterior obtained from a simulated transit light curve with a sampling based technique to that obtained analytically through this method. A transit of a fiducial planet with an oblateness of $10\%$, planet to star radius ratio of 0.14, and period of 7 days is simulated. Then, we perform MCMC with No U-Turn Sampling (NUTS) \textcolor{red}{cite NUTS paper here} with uninformative priors on all parameters except the transit duration, which is set to a wide uniform. In Fig.~\ref{fig:fishercorner}, we show a comparison between the posteriors obtained for that experiment and the analytic posterior obtained by analytically fitting a Gaussian through the Laplace approximation, using \texttt{jax} autodiff to compute the Hessian at the true solution. For the high SNR transit, the posteriors match closely, showing that in the limit of very high SNR, the posterior on oblateness is expected to be well approximated to a Gaussian around the point of maximum likelihood. 
+
+\begin{figure}[ht!]
+    \script{mcmc_vs_fisher_info.py}
+    \begin{centering}
+        \includegraphics[width=\linewidth]{figures/NUTS_vs_Fisher_info.pdf}
+        \caption{Comparison of a posterior obtained from MCMC sampling of a simulated transit observation with that obtained analytically from Laplace's approximation.}
+        \label{fig:fishercorner}
+    \end{centering}
+\end{figure}
+Furthermore, the diagonal of our covariance matrix represents the Cramér-Rao bound on each of our parameters, or the theoretical best precision achievable with an observation of a given noise. By writing the log-likelihood function in \texttt{jax} using our differentiable transit model, we can analytically compute the Cramér-Rao bound on oblateness for a transit observation of a fiducial planet. 
+
+Choosing a planet with the oblateness of Saturn and varying the obliquity and noise, we can explore the 
 
 \subsection{Fisher Forecasting of Existing Planet Population}
 \label{sec:fisherforecasting}
