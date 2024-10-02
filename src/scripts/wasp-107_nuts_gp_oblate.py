@@ -1,4 +1,4 @@
-NUM_CORES = 8
+NUM_CORES = 4
 import argparse
 import pandas as pd
 
@@ -24,49 +24,49 @@ from jaxoplanet import light_curves, orbits
 from jaxoplanet.light_curves import limb_dark_light_curve
 import arviz as az
 
+from tinygp import GaussianProcess, kernels
+
+
 from eclipsoid.legacy.light_curve import oblate_lightcurve_dict
+import paths
 
 oblate_lightcurve = jit(oblate_lightcurve_dict)
 
-df = pd.read_csv('Sing_2024_Fig1_WASP107b_white_light_curve_data.csv')
+df = pd.read_csv(paths.data/'Sing_2024_Fig1_WASP107b_white_light_curve_data.csv')
 t = jnp.array(df['bjd_tdb(days)'] - 2460118.948861)
 nsr_1_f = jnp.array(df['NRS1_wlc_flux'])
 nsr_1_f_err = jnp.array(df['NRS1_wlc_flux_err'])
 nrs_2_f = jnp.array(df['NRS2_wlc_flux'])
 nrs_2_f_err = jnp.array(df['NRS2_wlc_flux_err'])
 
-def q_to_u(q1, q2): 
-    u1 = 2.*jnp.sqrt(jnp.abs(q1))*q2
-    u2 = jnp.sqrt(jnp.abs(q1))*(1-(2*q2))
-    return u1,u2
+init_params_nrs1 = {}
+init_params_nrs1['f'] = 0.001
+init_params_nrs1['theta'] = np.radians(20)
+init_params_nrs1['u'] = jnp.array([0.15, 0.18])
+init_params_nrs1['duration']=2.753/24
+init_params_nrs1['bo'] = 0.11650
+init_params_nrs1['t0']=0.0
+init_params_nrs1['radius'] = 0.1446
+init_params_nrs1['period'] = 5.7214742
 
-q1 = 0.09
-q2 = 0.21
-u1,u2 = q_to_u(q1, q2)
-init_params = {'r_circ':jnp.sqrt((0.1446)**2),
-               'u':jnp.array([u1, u2]),
-                'bo':0.11650,
-                'log_d': jnp.log(2.753/24),
-                'hk':jnp.array([jnp.sqrt(0.0001)*jnp.sin(jnp.radians(20)), jnp.sqrt(0.0001)*jnp.cos(jnp.radians(20))])
-               
-}
-init_params['f'] = 0.1
-init_params['theta'] = np.radians(20)
-init_params['duration']=np.exp(init_params['log_d'])
-init_params['radius'] = np.sqrt(init_params['r_circ']**2/(1-init_params['f']))
-init_params['period'] = 5.7214742
+init_params_nrs2 = init_params_nrs1.copy()
+init_params_nrs2['u'] = jnp.array([0.11,0.13])
+
+def build_gp(t, diag, log_amp, log_ell, lc):
+    kernel = jnp.exp(2 * log_amp) * kernels.quasisep.Matern32(
+        jnp.exp(log_ell)
+    )
+    return GaussianProcess(kernel, t, diag=diag, mean=lc)
 
 def model(t, yerr, y=None):
-    # If we wanted to fit for all the parameters, we could use the following,
-    # but we'll keep these fixed for simplicity.
-    
-    #log_duration = numpyro.sample("log_duration", dist.Uniform(jnp.log(0.08), jnp.log(0.2)))
-    #b = numpyro.sample("b", dist.Uniform(0.0, 1.0))
+    yerr_nrs1, yerr_nrs2 = yerr
+    y_nrs1, y_nrs2 = y
 
-    #log_jitter = numpyro.sample("log_jitter", dist.Normal(jnp.log(yerr), 1.0))
-    r_circ = numpyro.sample("r_circ", dist.Uniform(0.01, 0.2))
-    u = numpyro.sample("u", distx.QuadLDParams())
-    bo = numpyro.sample("bo", dist.Uniform(0.0,1.))
+
+    r_circ = numpyro.sample("r_circ", dist.Uniform(0.02, 0.2))
+    u_nrs1 = numpyro.sample("u_nrs1", distx.QuadLDParams())
+    u_nrs2 = numpyro.sample("u_nrs2", distx.QuadLDParams())
+    bo = numpyro.sample("bo", dist.Uniform(0.01,0.9))
     
     #parametrize f, theta using a unit disk
     hk = numpyro.sample("hk", distx.UnitDisk())
@@ -74,24 +74,153 @@ def model(t, yerr, y=None):
     theta = numpyro.deterministic("theta", jnp.arctan2(hk[1], hk[0])/2)
     
     # The duration
-    log_d = numpyro.sample("log_d", numpyro.distributions.Normal(jnp.log(init_params['duration']), 0.01))
+    log_d = numpyro.sample("log_d", numpyro.distributions.Normal(jnp.log(init_params_nrs1['duration']), 0.01))
     duration = numpyro.deterministic("duration", jnp.exp(log_d))
     t0 = numpyro.sample("t0", dist.Uniform(-0.0001, 0.0001))
-    params = {
-        'period':init_params['period'],
+    
+    
+    params_nrs1 = {
+        'period':init_params_nrs1['period'],
         't0': t0,
         "radius": jnp.sqrt(r_circ**2/(1-f)),
         'bo':bo,
-        'u': u,
+        'u': u_nrs1,
         'f':f, 
         'theta':theta,
         'duration': duration
     }
-    y_pred = oblate_lightcurve(params, t)
-    numpyro.deterministic("light_curve", y_pred)
+    
+    params_nrs2 = {
+        'period':init_params_nrs1['period'],
+        't0': t0,
+        "radius": jnp.sqrt(r_circ**2/(1-f)),
+        'bo':bo,
+        'u': u_nrs2,
+        'f':f, 
+        'theta':theta,
+        'duration': duration
+    }
+    
+    #jitter term in ppm
+    nrs1_log_jitter = numpyro.sample("nrs1_log_jitter", dist.Normal(jnp.log(jnp.median(yerr_nrs1)), 1.0))
+    nrs2_log_jitter = numpyro.sample("nrs_2log_jitter", dist.Normal(jnp.log(jnp.median(yerr_nrs2)), 1.0))
+    
+    #add a linear trend centered on a slope of 0 and an intercept of 1
+    #in ppm
+    nrs1_slope = numpyro.sample("nrs1_slope", dist.Uniform(-0.001,0.001))
+    nrs2_slope = numpyro.sample("nrs2_slope", dist.Uniform(-0.001, 0.001))
+    nrs1_intercept = numpyro.sample("nrs1_intercept", dist.Uniform(-0.001, 0.001))
+    nrs2_intercept = numpyro.sample("nrs2_intercept", dist.Uniform(-0.001, 0.001))
+
+    #build the GP in tinygp
+    log_ell_nrs1 = numpyro.sample("nrs1_log_ell", dist.Normal(jnp.log(0.02), 1.0))
+    log_amp_nrs1 = numpyro.sample("nrs1_log_amp", dist.Normal(jnp.log(0.002), 1.0))
+    
+    log_ell_nrs2 = numpyro.sample("nrs2_log_ell", dist.Normal(jnp.log(0.02), 1.0))
+    log_amp_nrs2 = numpyro.sample("nrs2_log_amp", dist.Normal(jnp.log(0.002), 1.0))
+    
+    
+    y_pred_nrs1 = lambda t: oblate_lightcurve(params_nrs1, t)+nrs1_slope*t+nrs1_intercept
+    y_pred_nrs2 = lambda t: oblate_lightcurve(params_nrs2, t)+nrs2_slope*t+nrs2_intercept
+    
+    nrs1_gp = build_gp(t, yerr_nrs1**2+jnp.exp(2 * nrs1_log_jitter), log_amp_nrs1, log_ell_nrs1, y_pred_nrs1)
+    nrs2_gp = build_gp(t, yerr_nrs2**2+jnp.exp(2 * nrs2_log_jitter), log_amp_nrs2, log_ell_nrs2, y_pred_nrs2)
+
+
+    nrs1_mu = nrs1_gp.mean_function(t)
+    nrs2_mu = nrs2_gp.mean_function(t)
+
+    numpyro.deterministic("nrs1_light_curve", nrs1_mu)
+    numpyro.deterministic("nrs2_light_curve", nrs2_mu)
+
+    numpyro.deterministic("nrs1_gp", nrs1_gp.condition(y_nrs1, t, include_mean=False).gp.loc)
+    numpyro.deterministic("nrs2_gp", nrs2_gp.condition(y_nrs2, t, include_mean=False).gp.loc)
+    
     numpyro.sample(
-        "flux",
-        dist.Normal(y_pred, jnp.sqrt(yerr**2) #+ jnp.exp(2 * log_jitter))
-                    ),
-        obs=y,
+        "nrs1_flux",
+        nrs1_gp.numpyro_dist(),
+        obs=y_nrs1,
     )
+    
+    numpyro.sample(
+        "nrs2_flux",
+        nrs2_gp.numpyro_dist(),
+        obs=y_nrs2,
+    )
+
+opt_init_params = {
+    "r_circ": 0.1446,
+    "u_nrs1": jnp.array([0.15, 0.18]),
+    "u_nrs2": jnp.array([0.11, 0.13]),
+    "bo": 0.11650,
+    "hk": jnp.array([0.01, 0.01]),
+    "log_d": jnp.log(2.753/24),
+    "t0": 0.0,
+    "nrs1_log_jitter": 0.0,
+    "nrs2_log_jitter": 0.0,
+    "nrs1_slope": 0.0,
+    "nrs2_slope": 0.0,
+    "nrs1_log_ell": jnp.log(0.02),
+    "nrs2_log_ell": jnp.log(0.02),
+    "nrs1_log_amp": jnp.log(0.002),
+    "nrs2_log_amp": jnp.log(0.002),
+    "nrs1_intercept": 0.0,
+    "nrs2_intercept": 0.0
+}
+
+run_optim = numpyro_ext.optim.optimize(
+    model,
+    init_strategy=numpyro.infer.init_to_value(values=opt_init_params),
+    return_info=True
+)
+opt_params, status = run_optim(jax.random.PRNGKey(2), t, jnp.array([nsr_1_f_err, nrs_2_f_err]), y=jnp.array([nsr_1_f, nrs_2_f]))
+
+print(opt_params)
+
+fig, (ax1, ax3, ax2, ax4) = plt.subplots(4,1,figsize=(10,10), sharex=True)
+ax1.scatter(t,nsr_1_f,c='k',s=1)
+ax2.scatter(t,nrs_2_f,c='k',s=1)
+ax1.plot(t,opt_params['nrs1_light_curve'],c='b', label="mean oblate transit model")
+ax1.plot(t,opt_params['nrs1_gp']+opt_params['nrs1_light_curve'],c='r', label="GP")
+ax1.set_title("NRS1")
+ax2.plot(t,opt_params['nrs2_light_curve'],c='b', label="mean oblate transit model")
+ax2.plot(t,opt_params['nrs2_gp']+opt_params['nrs2_light_curve'],c='r', label="GP")
+ax2.set_title("NRS2")
+ax1.set_ylabel("Flux")
+ax2.set_ylabel("Flux")
+#plot residuals
+ax3.scatter(t,1e6*(nsr_1_f-opt_params['nrs1_light_curve']),c='k',s=1)
+ax4.scatter(t,1e6*(nrs_2_f-opt_params['nrs2_light_curve']),c='k',s=1)
+ax3.plot(t,1e6*opt_params['nrs1_gp'],c='r')
+ax4.plot(t,1e6*opt_params['nrs2_gp'],c='r')
+ax3.set_ylabel("Residuals (ppm)")
+ax4.set_ylabel("Residuals (ppm)")
+ax4.set_xlabel("Time (days)")
+plt.savefig(paths.figures/'nrs1_nrs2_optim_gp.png',dpi=300)
+
+sampler = infer.MCMC(
+    infer.NUTS(
+        model,
+        target_accept_prob=0.8,
+        dense_mass=True,
+        regularize_mass_matrix=False,
+        max_tree_depth=8,
+        init_strategy=numpyro.infer.init_to_value(values=opt_params),
+    ),
+    num_warmup=2000,
+    num_samples=2000,
+    num_chains=NUM_CORES,
+    progress_bar=True,
+)
+
+sampler.run(jax.random.PRNGKey(10), t, jnp.array([nsr_1_f_err, nrs_2_f_err]), y=jnp.array([nsr_1_f, nrs_2_f]))
+
+sampler.print_summary()
+
+inf_data = az.from_numpyro(sampler)
+az.summary(inf_data, var_names=['t0','r_circ', 'bo', 'u_nrs1','u_nrs2', 'f', 'theta', 'duration', 'hk', 
+                                'nrs1_log_jitter', 'nrs2_log_jitter', 
+                                'nrs1_slope', 'nrs2_slope', 'nrs1_intercept', 'nrs2_intercept', 
+                                "nrs1_log_ell", "nrs2_log_ell","nrs1_log_amp","nrs2_log_amp",])
+
+inf_data.to_netcdf(paths.data/"wasp_107_oblate_mcmc_jointfit_GP_posterior.h5")
