@@ -1,4 +1,4 @@
-NUM_CORES = 4
+NUM_CORES = 2
 import argparse
 import pandas as pd
 
@@ -103,14 +103,7 @@ def model(t, yerr, y=None):
     
     #jitter term in ppm
     nrs1_log_jitter = numpyro.sample("nrs1_log_jitter", dist.Normal(jnp.log(jnp.median(yerr_nrs1)), 1.0))
-    nrs2_log_jitter = numpyro.sample("nrs_2log_jitter", dist.Normal(jnp.log(jnp.median(yerr_nrs2)), 1.0))
-    
-    #add a linear trend centered on a slope of 0 and an intercept of 1
-    #in ppm
-    nrs1_slope = numpyro.sample("nrs1_slope", dist.Uniform(-0.001,0.001))
-    nrs2_slope = numpyro.sample("nrs2_slope", dist.Uniform(-0.001, 0.001))
-    nrs1_intercept = numpyro.sample("nrs1_intercept", dist.Uniform(-0.001, 0.001))
-    nrs2_intercept = numpyro.sample("nrs2_intercept", dist.Uniform(-0.001, 0.001))
+    nrs2_log_jitter = numpyro.sample("nrs2_log_jitter", dist.Normal(jnp.log(jnp.median(yerr_nrs2)), 1.0))
 
     #build the GP in tinygp
     log_ell_nrs1 = numpyro.sample("nrs1_log_ell", dist.Normal(jnp.log(0.02), 1.0))
@@ -120,8 +113,8 @@ def model(t, yerr, y=None):
     log_amp_nrs2 = numpyro.sample("nrs2_log_amp", dist.Normal(jnp.log(0.002), 1.0))
     
     
-    y_pred_nrs1 = lambda t: oblate_lightcurve(params_nrs1, t)+nrs1_slope*t+nrs1_intercept
-    y_pred_nrs2 = lambda t: oblate_lightcurve(params_nrs2, t)+nrs2_slope*t+nrs2_intercept
+    y_pred_nrs1 = lambda t: oblate_lightcurve(params_nrs1, t)
+    y_pred_nrs2 = lambda t: oblate_lightcurve(params_nrs2, t)
     
     nrs1_gp = build_gp(t, yerr_nrs1**2+jnp.exp(2 * nrs1_log_jitter), log_amp_nrs1, log_ell_nrs1, y_pred_nrs1)
     nrs2_gp = build_gp(t, yerr_nrs2**2+jnp.exp(2 * nrs2_log_jitter), log_amp_nrs2, log_ell_nrs2, y_pred_nrs2)
@@ -158,14 +151,10 @@ opt_init_params = {
     "t0": 0.0,
     "nrs1_log_jitter": 0.0,
     "nrs2_log_jitter": 0.0,
-    "nrs1_slope": 0.0,
-    "nrs2_slope": 0.0,
     "nrs1_log_ell": jnp.log(0.02),
     "nrs2_log_ell": jnp.log(0.02),
     "nrs1_log_amp": jnp.log(0.002),
     "nrs2_log_amp": jnp.log(0.002),
-    "nrs1_intercept": 0.0,
-    "nrs2_intercept": 0.0
 }
 
 run_optim = numpyro_ext.optim.optimize(
@@ -218,9 +207,7 @@ sampler.run(jax.random.PRNGKey(10), t, jnp.array([nsr_1_f_err, nrs_2_f_err]), y=
 sampler.print_summary()
 
 inf_data = az.from_numpyro(sampler)
+inf_data.to_netcdf(paths.data/"wasp_107_oblate_mcmc_jointfit_GP_posterior.h5")
 az.summary(inf_data, var_names=['t0','r_circ', 'bo', 'u_nrs1','u_nrs2', 'f', 'theta', 'duration', 'hk', 
                                 'nrs1_log_jitter', 'nrs2_log_jitter', 
-                                'nrs1_slope', 'nrs2_slope', 'nrs1_intercept', 'nrs2_intercept', 
                                 "nrs1_log_ell", "nrs2_log_ell","nrs1_log_amp","nrs2_log_amp",])
-
-inf_data.to_netcdf(paths.data/"wasp_107_oblate_mcmc_jointfit_GP_posterior.h5")

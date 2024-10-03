@@ -24,10 +24,10 @@ def draw_oblate(b, xo, yo, ro, theta):
     ax.plot([0,1],[0,0],'k:',alpha=0.4,lw=1.)
     
     # Draw the planet, multiply semi major and semi minor axes by 2 to get major and minor axes
-    occultor = Ellipse((xo, yo), ro*2,ro*b*2, fill=False, color='r')
-    occultor_fill = Ellipse((xo, yo), ro*2,ro*b*2, fill=True, color='r',alpha=0.03)
-    ax.add_artist(occultor_fill)
-    ax.add_artist(occultor)
+    occulter = Ellipse((xo, yo), ro*2,ro*b*2, fill=False, color='r')
+    occulter_fill = Ellipse((xo, yo), ro*2,ro*b*2, fill=True, color='r',alpha=0.03)
+    ax.add_artist(occulter_fill)
+    ax.add_artist(occulter)
     
     ax.annotate("", xy=(xo, yo+ro), xytext=(xo, yo+ro*b), arrowprops=dict(arrowstyle="<->", color='r', alpha=0.7, shrinkA=1, shrinkB=1, linewidth=0.7))
     ax.annotate(r"$f r_{eq}$", xy=(xo, yo+ro*b/2+ro/2), xytext=(3, -1), textcoords="offset points", ha="left", va="center", color='r', fontsize=12, alpha=0.7)
@@ -37,7 +37,7 @@ def draw_oblate(b, xo, yo, ro, theta):
 
     ax.annotate(r"$(x_o, y_o)$", xy=(xo, yo), xytext=(0, 6), textcoords="offset points", ha="right", va="bottom", color='r', fontsize=12, alpha=0.7)
 
-    ax.annotate(r"occultor", xy=(xo, yo+ro*b+.19), xycoords="data",
+    ax.annotate(r"occulter", xy=(xo, yo+ro*b+.19), xycoords="data",
             xytext=(0, 0),
             textcoords="offset points", ha="center", va="bottom",
             fontsize=14, color="r")
@@ -67,7 +67,7 @@ def draw_oblate(b, xo, yo, ro, theta):
     prerot = Ellipse(prerot_center, ro*2,ro*b*2, angle=theta, fill=False, color='r', alpha=0.3, zorder=-1)
     ax.plot(prerot_center[0], prerot_center[1], 'ro', alpha=0.3, zorder=1, mew='0', ms=7)
     
-    ax.annotate(r"occultor", xy=(prerot_center[0], prerot_center[1]-ro*b-.18), xycoords="data",
+    ax.annotate(r"occulter", xy=(prerot_center[0], prerot_center[1]-ro*b-.18), xycoords="data",
             xytext=(0, 0),
             textcoords="offset points", ha="center", va="bottom",
             fontsize=14, color="r", alpha=0.3)
